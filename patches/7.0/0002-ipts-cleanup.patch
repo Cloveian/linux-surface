@@ -1,0 +1,41 @@
+From b62783cbec8a15dbe2012f78acd1e8963d577100 Mon Sep 17 00:00:00 2001
+From: surfacebot <surfacebot@users.noreply.github.com>
+Date: Thu, 16 Apr 2026 16:00:32 -0600
+Subject: [PATCH 4/7] HID: Remove stale IPTS Kconfig/Makefile references
+
+The IPTS directory doesn't exist in the tree, causing build failures.
+Remove the dangling source/obj references.
+
+Assisted-by: Claude:claude-opus-4-6
+Signed-off-by: cloveian
+---
+ drivers/hid/Kconfig  | 2 --
+ drivers/hid/Makefile | 1 -
+ 2 files changed, 3 deletions(-)
+
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 24e50f6d0..25dbab5c4 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -1457,8 +1457,6 @@ source "drivers/hid/surface-hid/Kconfig"
+ 
+ source "drivers/hid/intel-thc-hid/Kconfig"
+ 
+-source "drivers/hid/ipts/Kconfig"
+-
+ source "drivers/hid/ithc/Kconfig"
+ 
+ endif # HID
+diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
+index dd6a62aba..d0d2a76a7 100644
+--- a/drivers/hid/Makefile
++++ b/drivers/hid/Makefile
+@@ -179,5 +179,4 @@ obj-$(CONFIG_HID_SURFACE)	+= hid-surface.o
+ 
+ obj-$(CONFIG_INTEL_THC_HID)     += intel-thc-hid/
+ 
+-obj-$(CONFIG_HID_IPTS)          += ipts/
+ obj-$(CONFIG_HID_ITHC)          += ithc/
+-- 
+2.53.0
+

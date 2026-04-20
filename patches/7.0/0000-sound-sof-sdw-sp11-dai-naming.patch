@@ -1,0 +1,52 @@
+From: cloveian
+Date: Wed, 15 Apr 2026 17:18:08 -0600
+Subject: [PATCH] sound: soc: intel: sof_sdw: Force SmartAmp/SmartMic DAI names for Surface Pro 11
+
+The sof_sdw DAI link naming logic falls through to a generic name when
+append_dai_type is not set, which doesn't match the function topology
+filenames expected by SOF for Surface Pro 11 (Snapdragon X / Intel
+configuration with SoundWire SmartAmp and SmartMic endpoints).
+
+Force "Playback-SmartAmp" / "Capture-SmartMic" names explicitly for
+AMP and MIC DAI types when append_dai_type is not set, matching the
+existing SmartAmp/SmartMic patterns used in function topology files.
+
+Tested on Surface Pro 11 with kernel 7.0.
+
+Signed-off-by: cloveian
+---
+ sound/soc/intel/boards/sof_sdw.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/intel/boards/sof_sdw.c b/sound/soc/intel/boards/sof_sdw.c
+index XXXXXXX..XXXXXXX 100644
+--- a/sound/soc/intel/boards/sof_sdw.c
++++ b/sound/soc/intel/boards/sof_sdw.c
+@@ -932,15 +932,26 @@ static int sof_sdw_rtd_init(struct snd_soc_pcm_runtime *rtd)
+ 		}
+
+ 		/* create stream name according to first link id */
+-		if (ctx->append_dai_type)
++		if (ctx->append_dai_type) {
+ 			name = devm_kasprintf(dev, GFP_KERNEL,
+ 					      sdw_stream_name[stream + 2],
+ 					      ffs(sof_end->link_mask) - 1,
+ 					      type_strings[sof_end->dai_info->dai_type]);
+-		else
++		} else if (sof_end->dai_info->dai_type == SOC_SDW_DAI_TYPE_AMP) {
++			/* Force SmartAmp name for amplifiers to match topology expectations */
++			name = devm_kasprintf(dev, GFP_KERNEL, "%s-%s",
++					      stream == SNDRV_PCM_STREAM_PLAYBACK ? "Playback" : "Capture",
++					      type_strings[SOC_SDW_DAI_TYPE_AMP]);
++		} else if (sof_end->dai_info->dai_type == SOC_SDW_DAI_TYPE_MIC) {
++			/* Force SmartMic name for mic to match function topology expectations */
++			name = devm_kasprintf(dev, GFP_KERNEL, "%s-%s",
++					      stream == SNDRV_PCM_STREAM_PLAYBACK ? "Playback" : "Capture",
++					      type_strings[SOC_SDW_DAI_TYPE_MIC]);
++		} else {
+ 			name = devm_kasprintf(dev, GFP_KERNEL,
+ 					      sdw_stream_name[stream],
+ 					      ffs(sof_end->link_mask) - 1);
++		}
+ 		if (!name)
+ 			return -ENOMEM;
